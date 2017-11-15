@@ -24,6 +24,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw e;
             });
     });
+
+
 });
 
 function getBookmarks() {
@@ -49,13 +51,40 @@ function updateBookmarks(bookmarks) {
     for (var i = 0; i < bookmarks.length; i++) {
         var bookmark = document.createElement('div');
         var documentUrl = document.createElement('a');
+        var deleteButton = document.createElement('button');
         documentUrl.innerHTML = bookmarks[i];
         documentUrl.setAttribute('href', bookmarks[i]);
-
+        deleteButton.innerHTML = "remove";
+        deleteButton.setAttribute('name', 'remove');
+        deleteButton.addEventListener("click", deleteBookmark);
+        deleteButton.setAttribute('data-bookmarkIndex', i)
+        deleteButton.setAttribute('enabled', '');
         bookmark.appendChild(documentUrl);
+        bookmark.appendChild(deleteButton);
 
         bookmarksContainer.appendChild(bookmark);
     }
+}
+
+function deleteBookmark(index) {
+    var currentButtonIndex = this.getAttribute('data-bookmarkIndex')
+    console.log(currentButtonIndex)
+    return fetch('/api/bookmarks/'+ currentButtonIndex, {
+        method: 'DELETE'
+    })
+    .then(function(response) {
+        if (response.status !== 200) {
+            return Promise.reject(new Error(response.statusText));
+        }
+    })
+    
+    .then(getBookmarks)
+    .then(function(bookmarks) {
+        updateBookmarks(bookmarks);
+    })
+    .catch(function(e) {
+        throw e;
+    });
 }
 
 function addBookmark(form) {
